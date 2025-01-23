@@ -1,0 +1,22 @@
+.gauge__container {
+    color: $--light-grey;
+    position: relative;
+    padding: .5rem;
+}
+
+.gauge__value {
+    color: black;
+    font-size: 2rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, calc(-50% - 40px));
+    font-family: $font--primary;
+}
+
+.gauge__header {
+    color: $--very-dark-grey;
+    text-align: center;
+    margin-bottom: 0.875rem;
+    font-family: $font--secondary;
+}
