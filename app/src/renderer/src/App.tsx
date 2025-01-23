@@ -4,10 +4,10 @@ import Gauge from './components/gauge/Gauge'
 import { DBClient } from './data/DBClient'
 import { Interaction } from './data/types/interactions.types'
 import Timer from './components/timer/Timer'
+import Confetti from "react-confetti";
 
 type EnrichedInteraction = (
-  | Interaction[]
-  | {
+  {
       interaction_id: number | undefined
       interaction_type: string
       hit_count: number
@@ -15,13 +15,28 @@ type EnrichedInteraction = (
       orangeMilestoneCount: number
       greenMilestoneCount: number
       maxMilestoneCount: number
-      milestoneCounts: number[]
+      milestoneCounts: number[],
+      maxMilestoneReached: boolean
     }
-)[]
+)
+
+interface IConfettiThrown {
+  contactAttempt: boolean;
+  conversation: boolean;
+  meeting: boolean;
+  marketIntelligence: boolean,
+}
 
 function App(): JSX.Element {
   const [interactions, setInteractions] = useState<EnrichedInteraction[]>()
-  const [transactionMade, setTransactionMade] = useState(false)
+  const [transactionMade, setTransactionMade] = useState<boolean>(false)
+  const [confettiThrown, setConfettiThrown] = useState<IConfettiThrown>({
+    contactAttempt: false,
+    conversation: false,
+    meeting: false,
+    marketIntelligence: false,
+
+  })
 
   const transformInteractions: (interactions: Interaction[]) => EnrichedInteraction[] = (
     interactions: Interaction[]
@@ -35,7 +50,10 @@ function App(): JSX.Element {
           orangeMilestoneCount: 30,
           greenMilestoneCount: 60,
           maxMilestoneCount: 80,
-          milestoneCounts: [0, 30, 60, 80]
+          milestoneCounts: [0, 30, 60, 80],
+          maxMilestoneReached: item.hit_count === 80,
+          confettiThrown: 0
+
         }
       } else if (interactionType === 'Conversation') {
         return {
@@ -43,7 +61,9 @@ function App(): JSX.Element {
           orangeMilestoneCount: 15,
           greenMilestoneCount: 30,
           maxMilestoneCount: 40,
-          milestoneCounts: [0, 15, 30, 40]
+          milestoneCounts: [0, 15, 30, 40],
+          maxMilestoneReached: item.hit_count === 40,
+          confettiThrown: 0
         }
       } else if (interactionType === 'Meeting') {
         return {
@@ -51,7 +71,9 @@ function App(): JSX.Element {
           orangeMilestoneCount: 1,
           greenMilestoneCount: 3,
           maxMilestoneCount: 4,
-          milestoneCounts: [0, 1, 3, 4]
+          milestoneCounts: [0, 1, 3, 4],
+          maxMilestoneReached: item.hit_count === 4,
+          confettiThrown: 0
         }
       } else if (interactionType === 'Market Intelligence') {
         return {
@@ -59,7 +81,9 @@ function App(): JSX.Element {
           orangeMilestoneCount: 1,
           greenMilestoneCount: 3,
           maxMilestoneCount: 5,
-          milestoneCounts: [0, 1, 3, 5]
+          milestoneCounts: [0, 1, 3, 5],
+          maxMilestoneReached: item.hit_count === 5,
+          confettiThrown: 0
         }
       } else return item
     })
@@ -104,10 +128,41 @@ function App(): JSX.Element {
     getInteractions()
   }, [transactionMade])
 
+  useEffect(() => {
+    if (!interactions) return;
+
+    const completedInteractions = interactions?.filter(interaction => interaction.maxMilestoneReached)
+    if (completedInteractions) {
+      setConfettiThrown((prevState) => {
+        const newState = completedInteractions.map(interaction => {
+          const cleansedInteractionType = interaction.interaction_type.replace(" ", "").toLowerCase() 
+         
+        })
+
+        return prevState
+      })
+    }
+
+    console.log("COMPLETED INTERACTIONS")
+    console.log(completedInteractions)
+  }, [interactions])
+
+  
+
   return (
-    <>
+    <div className="hero__main">
+
+      {
+        interactions?.some(interaction => interaction.maxMilestoneReached) ? (
+          <Confetti />
+        ) : ""
+      }
+     
+      {/* <Confetti /> */}
+      <div className="title">
       <h1 className="hero__header">The Clock Is Ticking</h1>
       <Timer />
+      </div>
       <div className="gauge__banner">
         {!!interactions &&
           interactions.map((interaction: any, idx: number) => {
@@ -170,7 +225,7 @@ function App(): JSX.Element {
             return <Gauge key={idx} {...allProps} handleClick={handleClick} />
           })}
       </div>
-    </>
+    </div>
   )
 }
 

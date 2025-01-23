@@ -5,6 +5,7 @@ interface IInteraction {
   greenMilestoneCount: number
   maxMilestoneCount: number
   milestoneCounts: number[]
+  maxMilestoneReached: boolean;
 }
 
 export const interactions: IInteraction[] = [
@@ -14,7 +15,8 @@ export const interactions: IInteraction[] = [
     orangeMilestoneCount: 30,
     greenMilestoneCount: 60,
     maxMilestoneCount: 80,
-    milestoneCounts: [0, 30, 60, 80]
+    milestoneCounts: [0, 30, 60, 80],
+    maxMilestoneReached: false
   },
   {
     interactionType: 'Conversations',
@@ -22,7 +24,8 @@ export const interactions: IInteraction[] = [
     orangeMilestoneCount: 15,
     greenMilestoneCount: 30,
     maxMilestoneCount: 40,
-    milestoneCounts: [0, 15, 30, 40]
+    milestoneCounts: [0, 15, 30, 40],
+    maxMilestoneReached: false
   },
   {
     interactionType: 'Market Intelligence',
@@ -30,7 +33,8 @@ export const interactions: IInteraction[] = [
     orangeMilestoneCount: 1,
     greenMilestoneCount: 3,
     maxMilestoneCount: 5,
-    milestoneCounts: [0, 1, 3, 5]
+    milestoneCounts: [0, 1, 3, 5],
+    maxMilestoneReached: false
   },
   {
     interactionType: 'Meetings',
@@ -38,6 +42,7 @@ export const interactions: IInteraction[] = [
     orangeMilestoneCount: 1,
     greenMilestoneCount: 3,
     maxMilestoneCount: 4,
-    milestoneCounts: [0, 1, 3, 4]
+    milestoneCounts: [0, 1, 3, 4],
+    maxMilestoneReached: false
   }
 ]
