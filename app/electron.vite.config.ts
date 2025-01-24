@@ -32,6 +32,8 @@ export default defineConfig({
             @import "./src/renderer/src/assets/_variables";
             @import "./src/renderer/src/components/gauge/_gauge";
             @import "./src/renderer/src/components/timer/_timer";
+            @import "./src/renderer/src/components/modal/_modal";
+            @import "./src/renderer/src/components/show-modal-button/_show-modal-button";
             @import "./src/renderer/src/assets/base";
             @import "./src/renderer/src/assets/_fonts";
           `

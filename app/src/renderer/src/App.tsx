@@ -4,39 +4,44 @@ import Gauge from './components/gauge/Gauge'
 import { DBClient } from './data/DBClient'
 import { Interaction } from './data/types/interactions.types'
 import Timer from './components/timer/Timer'
-import Confetti from "react-confetti";
+import Confetti from 'react-confetti'
+import { useWindowSize } from 'react-use'
+import Modal from './components/modal/Modal'
+import ShowModalButton from './components/show-modal-button/ShowModalButton'
 
-type EnrichedInteraction = (
-  {
-      interaction_id: number | undefined
-      interaction_type: string
-      hit_count: number
-      week_commencing: string
-      orangeMilestoneCount: number
-      greenMilestoneCount: number
-      maxMilestoneCount: number
-      milestoneCounts: number[],
-      maxMilestoneReached: boolean
-    }
-)
+type EnrichedInteraction = {
+  interaction_id: number | undefined
+  interaction_type: string
+  hit_count: number
+  week_commencing: string
+  orangeMilestoneCount: number
+  greenMilestoneCount: number
+  maxMilestoneCount: number
+  milestoneCounts: number[]
+  maxMilestoneReached: boolean
+}
 
 interface IConfettiThrown {
-  contactAttempt: boolean;
-  conversation: boolean;
-  meeting: boolean;
-  marketIntelligence: boolean,
+  contactAttempt: boolean
+  conversation: boolean
+  meeting: boolean
+  marketIntelligence: boolean
 }
 
 function App(): JSX.Element {
   const [interactions, setInteractions] = useState<EnrichedInteraction[]>()
   const [transactionMade, setTransactionMade] = useState<boolean>(false)
+  const [throwConfetti, setThrowConfetti] = useState<boolean>(false)
   const [confettiThrown, setConfettiThrown] = useState<IConfettiThrown>({
     contactAttempt: false,
     conversation: false,
     meeting: false,
-    marketIntelligence: false,
-
+    marketIntelligence: false
   })
+  const [openModal, setOpenModal] = useState<boolean>(false)
+  const [shouldCelebrate, setShouldCelebrate] = useState<boolean>(true)
+
+  const { width, height } = useWindowSize()
 
   const transformInteractions: (interactions: Interaction[]) => EnrichedInteraction[] = (
     interactions: Interaction[]
@@ -51,9 +56,7 @@ function App(): JSX.Element {
           greenMilestoneCount: 60,
           maxMilestoneCount: 80,
           milestoneCounts: [0, 30, 60, 80],
-          maxMilestoneReached: item.hit_count === 80,
-          confettiThrown: 0
-
+          maxMilestoneReached: item.hit_count === 80
         }
       } else if (interactionType === 'Conversation') {
         return {
@@ -62,8 +65,7 @@ function App(): JSX.Element {
           greenMilestoneCount: 30,
           maxMilestoneCount: 40,
           milestoneCounts: [0, 15, 30, 40],
-          maxMilestoneReached: item.hit_count === 40,
-          confettiThrown: 0
+          maxMilestoneReached: item.hit_count === 40
         }
       } else if (interactionType === 'Meeting') {
         return {
@@ -72,8 +74,7 @@ function App(): JSX.Element {
           greenMilestoneCount: 3,
           maxMilestoneCount: 4,
           milestoneCounts: [0, 1, 3, 4],
-          maxMilestoneReached: item.hit_count === 4,
-          confettiThrown: 0
+          maxMilestoneReached: item.hit_count === 4
         }
       } else if (interactionType === 'Market Intelligence') {
         return {
@@ -82,8 +83,7 @@ function App(): JSX.Element {
           greenMilestoneCount: 3,
           maxMilestoneCount: 5,
           milestoneCounts: [0, 1, 3, 5],
-          maxMilestoneReached: item.hit_count === 5,
-          confettiThrown: 0
+          maxMilestoneReached: item.hit_count === 5
         }
       } else return item
     })
@@ -93,21 +93,16 @@ function App(): JSX.Element {
     let interactions = dbClient.getInteractions()
     interactions.then((res) => {
       if (!res || res.length === 0) {
-        console.log("Couldn't find any interactions. Inserting fresh ones...")
         dbClient.insertFreshInteractions().then((_) => {
           return setTimeout(() => {
             dbClient.getInteractions().then((res) => {
-              console.log('Grabbing new interactions')
-              console.log(res)
               const supplementedInteractions = transformInteractions(res)
               setInteractions(supplementedInteractions)
             })
           }, 200)
         })
       } else {
-        console.log('Grabbing already-created interactions...')
         const supplementedInteractions = transformInteractions(res)
-        console.log('Supplemented interactions:', supplementedInteractions)
 
         setInteractions(supplementedInteractions)
         setTransactionMade(false)
@@ -124,44 +119,103 @@ function App(): JSX.Element {
     dbClient.updateInteraction(interactionId, hitCount)
   }
 
+  const handleModalClick = () => {
+    setOpenModal(!openModal)
+  }
+
+  const updateConfettiThrownObj = (shouldThrowConfetti: boolean) => {
+    if (!interactions) return
+
+    if (shouldThrowConfetti) {
+      setConfettiThrown((prevState) => {
+        const completedInteractions = interactions
+          .filter((interaction) => interaction.maxMilestoneReached)
+          .map((x) => x.interaction_type.replace(' ', '').toLowerCase())
+
+        for (let i in prevState) {
+          const cleansedKey = i.replace(' ', '').toLowerCase()
+
+          if (completedInteractions.includes(cleansedKey)) {
+            prevState[cleansedKey] = true
+          }
+        }
+
+        return prevState
+      })
+    } else {
+      setConfettiThrown((prevState) => {
+        const completedInteractions = interactions
+          .filter((interaction) => !interaction.maxMilestoneReached)
+          .map((x) => x.interaction_type.replace(' ', '').toLowerCase())
+
+        for (let i in prevState) {
+          const cleansedKey = i.replace(' ', '').toLowerCase()
+
+          if (completedInteractions.includes(cleansedKey)) {
+            prevState[cleansedKey] = false
+          }
+        }
+
+        return prevState
+      })
+    }
+  }
+
+  const handleCelebrateClick = () => {
+    setShouldCelebrate(!shouldCelebrate)
+  }
+
   useEffect(() => {
     getInteractions()
   }, [transactionMade])
 
   useEffect(() => {
-    if (!interactions) return;
+    if (!interactions || !shouldCelebrate) return
 
-    const completedInteractions = interactions?.filter(interaction => interaction.maxMilestoneReached)
-    if (completedInteractions) {
-      setConfettiThrown((prevState) => {
-        const newState = completedInteractions.map(interaction => {
-          const cleansedInteractionType = interaction.interaction_type.replace(" ", "").toLowerCase() 
-         
-        })
-
-        return prevState
+    const confettiThrownArray = Object.keys(confettiThrown)
+      .map((key) => {
+        if (confettiThrown[key] === true) return key
+        else return
       })
-    }
+      .filter((key) => key !== undefined)
 
-    console.log("COMPLETED INTERACTIONS")
-    console.log(completedInteractions)
+    if (
+      interactions?.some(
+        (interaction) =>
+          interaction.maxMilestoneReached &&
+          !confettiThrownArray.includes(interaction.interaction_type.replace(' ', '').toLowerCase())
+      )
+    ) {
+      setOpenModal(true)
+      setThrowConfetti(true)
+      updateConfettiThrownObj(true)
+    } else {
+      updateConfettiThrownObj(false)
+    }
   }, [interactions])
 
-  
+  useEffect(() => {
+    if (!throwConfetti) return
+
+    setTimeout(() => {
+      setThrowConfetti(false)
+    }, 3000)
+  }, [throwConfetti])
 
   return (
     <div className="hero__main">
-
-      {
-        interactions?.some(interaction => interaction.maxMilestoneReached) ? (
-          <Confetti />
-        ) : ""
-      }
-     
-      {/* <Confetti /> */}
+      <ShowModalButton showModal={shouldCelebrate} handleClick={handleCelebrateClick} />
+      <Confetti
+        width={width}
+        height={height}
+        numberOfPieces={1000}
+        recycle={throwConfetti}
+        gravity={0.1}
+      />
+      {openModal ? <Modal handleClick={handleModalClick} /> : ''}
       <div className="title">
-      <h1 className="hero__header">The Clock Is Ticking</h1>
-      <Timer />
+        <h1 className="hero__header">The Clock Is Ticking</h1>
+        <Timer />
       </div>
       <div className="gauge__banner">
         {!!interactions &&

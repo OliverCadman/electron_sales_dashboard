@@ -1,0 +1,32 @@
+.show-modal-btn {
+    background-color: $purple-dark;
+  position: fixed;
+  right: 0;
+  top: 20%;
+  width: 75px;
+  height: 56px;
+  border-radius: 100px  0 0 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.1s ease-in-out;
+  border: none;
+
+  svg {
+    width: 65%;
+  }
+
+  &:hover {
+    background-color: $purple-light;
+    cursor: pointer;
+
+  }
+
+  &.subdued {
+    background-color: $--dark-grey;
+
+    &:hover {
+        background-color: $purple-light;
+    }
+  }
+}

@@ -5,10 +5,16 @@ $--white-soft: #F8F8F8;
 $--light-grey: rgba(255, 255, 255, 0.6);
 $--dark-grey: #7a7a7a;
 $--very-dark-grey: #2d2d2d;
+$--modal-border: #332665;
+$--modal-btn-bg: #332665;
 
 $--gauge-success: #387806;
 $--gauge-warning: #FF8000;
 $--gauge-danger: #A63A2F;
+
+// Show/Hide Modal Button
+$purple-dark: #5e4294;
+$purple-light: #7954b5;
 
 // Gradients
 
@@ -18,9 +24,9 @@ $--gradient-test: linear-gradient(
     #845ec2,
     #d65db1,
     #ff6f91,
-    #ff9671,
-    #ffc75f,
-    #f9f871
+    #de71ff,
+    #fc5fff,
+    #845ec2,
 );
 
 // Font Family
